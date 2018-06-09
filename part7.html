@@ -35,17 +35,33 @@
     var player;
     var platforms;
     var cursors;
-
     var game = new Phaser.Game(config);
 
     function preload ()
     {
-        this.load.image('sky', 'src/games/firstgame/assets/sky.png');
-        this.load.image('ground', 'src/games/firstgame/assets/platform.png');
-        this.load.image('star', 'src/games/firstgame/assets/star.png');
-        this.load.image('bomb', 'src/games/firstgame/assets/bomb.png');
-        this.load.spritesheet('dude', 'src/games/firstgame/assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.image('sky', 'assets/sky.png');
+        this.load.image('ground', 'assets/platform.png');
+        this.load.image('star', 'assets/star.png');
+        this.load.image('bomb', 'assets/bomb.png');
+        this.load.spritesheet('123', 'assets/123.png', { frameWidth: 32, frameHeight: 32 });
     }
+
+    class jugador{
+		constructor(sprite){
+			this.sprite = sprite;
+			this.saltando = false;
+		}
+		mover(direccion){
+			if(direccion == "Izquierda"){
+            	this.sprite.setVelocityX(-160);
+	            this.sprite.anims.play('left', true);
+			}else if(direccion == "Derecha"){
+				this.sprite.setVelocityX(160);
+				this.sprite.anims.play('right',true);
+			}
+		}
+
+	}
 
     function create ()
     {
@@ -58,29 +74,28 @@
         platforms.create(600, 400, 'ground');
         platforms.create(50, 250, 'ground');
         platforms.create(750, 220, 'ground');
-
-        player = this.physics.add.sprite(100, 450, 'dude');
-
+		
+        player = this.physics.add.sprite(100, 450, '123');
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
-
+		J1 = new jugador(player);
         this.anims.create({
             key: 'left',
-            frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
-            frameRate: 10,
+            frames: this.anims.generateFrameNumbers('123', { start: 40, end: 42 }),
+            frameRate: 9,
             repeat: -1
         });
 
         this.anims.create({
             key: 'turn',
-            frames: [ { key: 'dude', frame: 4 } ],
+            frames: [ { key: '123', frame: 21 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'right',
-            frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
-            frameRate: 10,
+            frames: this.anims.generateFrameNumbers('123', { start: 32, end: 34 }),
+            frameRate: 9,
             repeat: -1
         });
 
@@ -91,17 +106,13 @@
 
     function update ()
     {
-        if (cursors.left.isDown)
+        	if (cursors.left.isDown)
         {
-            player.setVelocityX(-160);
-
-            player.anims.play('left', true);
+			J1.mover("Izquierda");
         }
-        else if (cursors.right.isDown)
+            if (cursors.right.isDown)
         {
-            player.setVelocityX(160);
-
-            player.anims.play('right', true);
+			J1.mover("Derecha");
         }
         else
         {
@@ -112,6 +123,7 @@
 
         if (cursors.up.isDown && player.body.touching.down)
         {
+            
             player.setVelocityY(-330);
         }
     }

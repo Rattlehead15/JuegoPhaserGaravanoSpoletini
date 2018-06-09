@@ -1,0 +1,89 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Making your first Phaser 3 Game - Part 7</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.1.1/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 300 },
+                debug: false
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update });
+
+function preload() {
+
+    game.load.image('phaser', 'assets/dude.png');
+
+}
+
+var sprite;
+
+var upKey;
+var downKey;
+var leftKey;
+var rightKey;
+
+function create() {
+
+    game.stage.backgroundColor = '#736357';
+
+    sprite = game.add.sprite(300, 300, 'phaser');
+
+    //  In this example we'll create 4 specific keys (up, down, left, right) and monitor them in our update function
+
+    upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+    downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+    leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+    rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+
+}
+
+function update() {
+
+    if (upKey.isDown)
+    {
+        sprite.y--;
+    }
+    else if (downKey.isDown)
+    {
+        sprite.y++;
+    }
+
+    if (leftKey.isDown)
+    {
+        sprite.x--;
+    }
+    else if (rightKey.isDown)
+    {
+        sprite.x++;
+    }
+
+}
+
+</script>
+
+</body>
