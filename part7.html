@@ -48,7 +48,7 @@
 
     class jugador{
 		constructor(sprite){
-			this.sprite = sprite;
+            this.sprite = sprite
 			this.saltando = false;
 		}
 		mover(direccion){
@@ -58,9 +58,11 @@
 			}else if(direccion == "Derecha"){
 				this.sprite.setVelocityX(160);
 				this.sprite.anims.play('right',true);
-			}
+			}else if(direccion == "No"){  
+                J1.sprite.setVelocityX(0);
+                J1.sprite.anims.play('turn');
+            }
 		}
-
 	}
 
     function create ()
@@ -78,7 +80,9 @@
         player = this.physics.add.sprite(100, 450, '123');
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
+
 		J1 = new jugador(player);
+
         this.anims.create({
             key: 'left',
             frames: this.anims.generateFrameNumbers('123', { start: 40, end: 42 }),
@@ -106,25 +110,31 @@
 
     function update ()
     {
-        	if (cursors.left.isDown)
+        if (cursors.left.isDown)
         {
 			J1.mover("Izquierda");
-        }
             if (cursors.right.isDown)
+            {
+                J1.mover("No");
+            }
+        }
+        else if (cursors.right.isDown)
         {
 			J1.mover("Derecha");
+            if (cursors.left.isDown)
+            {
+                J1.mover("No");
+            }
         }
         else
         {
-            player.setVelocityX(0);
-
-            player.anims.play('turn');
+            J1.mover("No");
         }
 
         if (cursors.up.isDown && player.body.touching.down)
         {
             
-            player.setVelocityY(-330);
+            J1.sprite.setVelocityY(-330);
         }
     }
 
