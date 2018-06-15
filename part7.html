@@ -43,32 +43,84 @@
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
         this.load.image('bomb', 'assets/bomb.png');
-        this.load.spritesheet('123', 'assets/123.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('123', 'assets/waluigi.png', { frameWidth: 38, frameHeight: 50 });
     }
 
     class jugador{
 		constructor(sprite){
+            this.corriendo = false;
             this.sprite = sprite
 			this.saltando = false;
+            this.mirandoDerecha = true;
+            this.arriba = false;
+            this.agachado = false;
 		}
 		mover(direccion){
 			if(direccion == "Izquierda"){
-            	this.sprite.setVelocityX(-160);
-	            this.sprite.anims.play('left', true);
+                this.mirandoDerecha = false;
+                if(this.corriendo){
+            	    this.sprite.setVelocityX(-200);
+	                this.sprite.anims.play('runL', true);
+                }else{
+            	    this.sprite.setVelocityX(-160);
+	                this.sprite.anims.play('left', true);
+                }
 			}else if(direccion == "Derecha"){
-				this.sprite.setVelocityX(160);
-				this.sprite.anims.play('right',true);
-			}else if(direccion == "No"){  
-                J1.sprite.setVelocityX(0);
-                J1.sprite.anims.play('turn');
+                this.mirandoDerecha = true;
+                if(this.corriendo){
+                    this.sprite.setVelocityX(200);
+                    this.sprite.anims.play('run',true);
+                }else{
+				    this.sprite.setVelocityX(160);
+				    this.sprite.anims.play('right',true);
+                }
+            }else if(direccion == "Arriba"){
+                this.arriba = true;
+            }else if(direccion == "Abajo"){
+                this.abajo = true;
+			}else if(direccion == "No"){
+                this.sprite.setVelocityX(0);
+                if(this.arriba && !this.abajo){
+                        if(this.mirandoDerecha)
+                            this.sprite.anims.play('up');
+                        else
+                            this.sprite.anims.play('upL');
+                }else if(this.abajo && !this.arriba){
+                        if(this.mirandoDerecha)
+                            this.sprite.anims.play('down');
+                        else
+                            this.sprite.anims.play('downL');
+                }else{
+                    if(this.mirandoDerecha)
+                        this.sprite.anims.play('turn');
+                    else
+                        this.sprite.anims.play('turnL')
+                }
+                    
             }
 		}
+        saltar(){
+            this.saltando = true;
+            this.sprite.setVelocityY(-330);
+        }
+        caer(){
+            if(this.saltando){
+                if(this.mirandoDerecha)
+                    this.sprite.anims.play('jump');
+                else
+                    this.sprite.anims.play('jumpL');
+            }else{
+                if(this.mirandoDerecha)
+                    this.sprite.anims.play('fall');
+                else
+                    this.sprite.anims.play('fallL');
+            }
+        }
 	}
 
     function create ()
     {
         this.add.image(400, 300, 'sky');
-
         platforms = this.physics.add.staticGroup();
 
         platforms.create(400, 568, 'ground').setScale(2).refreshBody();
@@ -85,24 +137,89 @@
 
         this.anims.create({
             key: 'left',
-            frames: this.anims.generateFrameNumbers('123', { start: 40, end: 42 }),
+            frames: this.anims.generateFrameNumbers('123', { start: 24, end: 29 }),
             frameRate: 9,
             repeat: -1
         });
 
         this.anims.create({
             key: 'turn',
-            frames: [ { key: '123', frame: 21 } ],
+            frames: [ { key: '123', frame: 0 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'turnL',
+            frames: [ { key: '123', frame: 42 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'up',
+            frames: [ { key: '123', frame: 2 } ],
+            frameRate: 20
+        });
+        this.anims.create({
+            key: 'upL',
+            frames: [ { key: '123', frame: 40 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'down',
+            frames: [ { key: '123', frame: 1 } ],
+            frameRate: 20
+        });
+        this.anims.create({
+            key: 'downL',
+            frames: [ { key: '123', frame: 41 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'right',
-            frames: this.anims.generateFrameNumbers('123', { start: 32, end: 34 }),
+            frames: this.anims.generateFrameNumbers('123', { start: 4, end: 9 }),
             frameRate: 9,
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'run',
+            frames: this.anims.generateFrameNumbers('123', { start: 14, end: 19 }),
+            frameRate: 9,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'runL',
+            frames: this.anims.generateFrameNumbers('123', { start: 34, end: 39 }),
+            frameRate: 9,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'jump',
+            frames: [ { key: '123', frame: 30 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'jumpL',
+            frames: [ { key: '123', frame: 72 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'fall',
+            frames: [ { key: '123', frame: 31 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'fallL',
+            frames: [ { key: '123', frame: 71 } ],
+            frameRate: 20
+        });
         cursors = this.input.keyboard.createCursorKeys();
 
         this.physics.add.collider(player, platforms);
@@ -110,6 +227,10 @@
 
     function update ()
     {
+        if(cursors.shift.isDown)
+            J1.corriendo = true;
+        else
+            J1.corriendo = false;
         if (cursors.left.isDown)
         {
 			J1.mover("Izquierda");
@@ -131,11 +252,22 @@
             J1.mover("No");
         }
 
-        if (cursors.up.isDown && player.body.touching.down)
+        if (player.body.touching.down)
         {
-            
-            J1.sprite.setVelocityY(-330);
+            J1.saltando=false;
+            if(cursors.up.isDown)
+                J1.mover("Arriba");
+            if(cursors.down.isDown)
+                J1.mover("Abajo");
+            if(!cursors.up.isDown && !cursors.down.isDown){
+                J1.arriba = false;
+                J1.abajo = false;
+            }
+            if(cursors.space.isDown)
+                J1.saltar();
         }
+        if (!player.body.touching.down)
+            J1.caer();
     }
 
 </script>
