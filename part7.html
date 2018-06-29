@@ -36,13 +36,17 @@
     var platforms;
     var cursors;
     var game = new Phaser.Game(config);
+    var plat;
 
     function preload ()
     {
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
+        this.load.image('base', 'assets/base.png');
         this.load.image('bomb', 'assets/bomb.png');
+        this.load.image('cielopro', 'assets/skynight.png');
+        this.load.image('bicho', 'assets/bicho.png');
         this.load.spritesheet('123', 'assets/waluigi.png', { frameWidth: 38, frameHeight: 50 });
     }
 
@@ -59,7 +63,7 @@
 			if(direccion == "Izquierda"){
                 this.mirandoDerecha = false;
                 if(this.corriendo){
-            	    this.sprite.setVelocityX(-200);
+            	    this.sprite.setVelocityX(-300);
 	                this.sprite.anims.play('runL', true);
                 }else{
             	    this.sprite.setVelocityX(-160);
@@ -68,7 +72,7 @@
 			}else if(direccion == "Derecha"){
                 this.mirandoDerecha = true;
                 if(this.corriendo){
-                    this.sprite.setVelocityX(200);
+                    this.sprite.setVelocityX(300);
                     this.sprite.anims.play('run',true);
                 }else{
 				    this.sprite.setVelocityX(160);
@@ -118,23 +122,53 @@
         }
 	}
 
+    class movediza{
+            
+            constructor(sprite){
+                this.sprite = sprite;
+		}
+        
+            subir(){
+                this.sprite.setVelocityY(-100);
+            }
+            bajar(){
+                this.sprite.setVelocityY(100);
+            }
+            quietoX(){
+                this.sprite.x=430;
+            }
+            quietoY(){
+                this.sprite.setVelocityY(0);
+            }
+
+        }
+    function platformrandom()
+    {
+        P1 =new movediza(platrand);
+
+    }
+
     function create ()
     {
-        this.add.image(400, 300, 'sky');
+        //Aqui creamos el cielo, y le desactivamos la gravedad para que no se caiga *referencia a chicken little*
+        cielo=this.physics.add.sprite(4000, 300, 'cielopro');
+        cielo.body.allowGravity=false;
+
         platforms = this.physics.add.staticGroup();
+       
+        //platforms.create(400, 568, 'ground').setScale(2).refreshBody();
 
-        platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-
-        platforms.create(600, 400, 'ground');
-        platforms.create(50, 250, 'ground');
-        platforms.create(750, 220, 'ground');
+       //platforms.create(600, 400, 'ground');
+        //platforms.create(50, 250, 'ground');
+        //platforms.create(750, 220, 'ground');
 		
         player = this.physics.add.sprite(100, 450, '123');
-        player.setBounce(0.2);
-        player.setCollideWorldBounds(true);
+        player.setBounce(0.1);
+        player.setCollideWorldBounds(false);
+
 
 		J1 = new jugador(player);
-
+        
         this.anims.create({
             key: 'left',
             frames: this.anims.generateFrameNumbers('123', { start: 24, end: 29 }),
@@ -223,10 +257,34 @@
         cursors = this.input.keyboard.createCursorKeys();
 
         this.physics.add.collider(player, platforms);
+
+        //Aca se crea la plataforma movediza
+        plat = this.physics.add.sprite(110,500, 'base');
+        this.physics.add.collider(platforms, plat);
+        this.physics.add.collider(plat, player);
+        plat.setCollideWorldBounds(true);
+        plat.body.allowGravity=false;
+        
+        //Aca crearemos las plataformas que apareceran aleatoriamente
+        platrand = this.physics.add.sprite(400 ,(Math.floor((Math.random() * 500) + 1)),'bicho');
+        this.physics.add.collider(platrand, player);
+        platrand.setCollideWorldBounds(false);
+        platrand.body.allowGravity=false;
+
+
+
+        P1 =new movediza(plat);
+        
+
     }
 
     function update ()
     {
+        //Para hacer que el cielo avance
+        if(cielo.x>=-3170){
+        cielo.x+=-0.75;
+        }
+        //Para controlar el personaje
         if(cursors.shift.isDown)
             J1.corriendo = true;
         else
@@ -266,8 +324,21 @@
             if(cursors.space.isDown)
                 J1.saltar();
         }
-        if (!player.body.touching.down)
+        if (!player.body.touching.down){
             J1.caer();
+        }
+        
+        //Para controlar las plataformas:
+        if (cursors.up.isDown){
+            P1.subir();
+        }
+        else{
+            P1.quietoY();
+        }
+        if(cursors.down.isDown){
+            P1.bajar();
+        }
+      //  P1.quietoX();
     }
 
 </script>
