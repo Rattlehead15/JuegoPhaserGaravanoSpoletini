@@ -34,6 +34,7 @@
 
     var player;
     var platforms;
+    var cielo;
     var cursors;
     var game = new Phaser.Game(config);
     var plat;
@@ -45,7 +46,7 @@
         this.load.image('star', 'assets/star.png');
         this.load.image('base', 'assets/base.png');
         this.load.image('bomb', 'assets/bomb.png');
-        this.load.image('cielopro', 'assets/skynight.png');
+        this.load.image('cielopro', 'assets/1.jpg');
         this.load.image('bicho', 'assets/bicho.png');
         this.load.spritesheet('123', 'assets/waluigi.png', { frameWidth: 38, frameHeight: 50 });
     }
@@ -144,15 +145,13 @@
         }
     function platformrandom()
     {
-        P1 =new movediza(platrand);
-
+        P1 = new movediza(platrand);
     }
 
     function create ()
     {
         //Aqui creamos el cielo, y le desactivamos la gravedad para que no se caiga *referencia a chicken little*
-        cielo=this.physics.add.sprite(4000, 300, 'cielopro');
-        cielo.body.allowGravity=false;
+        cielo = this.add.tileSprite(0, 0, 4000, 1200, 'cielopro');
 
         platforms = this.physics.add.staticGroup();
        
@@ -281,9 +280,7 @@
     function update ()
     {
         //Para hacer que el cielo avance
-        if(cielo.x>=-3170){
-        cielo.x+=-0.75;
-        }
+        cielo.tilePositionX += 1;
         //Para controlar el personaje
         if(cursors.shift.isDown)
             J1.corriendo = true;
