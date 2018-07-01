@@ -156,7 +156,9 @@
                 delay: retraso,
                 repeat: 0,
                 loop: true,
+                //*No tocar*   (esto esta declarado de esta forma para que la función no quede desencapsulada)
                 callback: function(){this.TirarBola(this.vida);},
+                // La linea de abajo hace que la función se ejecute dentro de la clase
                 callbackScope: this
             });
         }
@@ -345,8 +347,7 @@
 
     function create ()
     {
-        botonDisparo = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        //Aqui creamos el cielo
+        //Aqui creamos el cielo y el texto de victoria
         cielo = this.add.tileSprite(0, 0, 4000, 1200, 'cielopro');
 		texto = this.add.text(16,16, 'GANASTE', {fontsize: '400', fill: '#0F0'});
         texto.alpha = 0;
@@ -431,13 +432,14 @@
             frames: [ { key: 'waluigi', frame: 71 } ],
             frameRate: 20
         });
+
+        //Aca creamos los inputs
+        botonDisparo = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         cursors = this.input.keyboard.createCursorKeys();
         
         JEFE = new jefe(this, J1);
         J1.setEnemigo(JEFE);
         P1 = new movediza(this, J1);
-        
-
     }
 
     function update ()
@@ -507,7 +509,6 @@
         }else{
             P1.quietoY();
         }
-      //  P1.quietoX();
     }
 
 </script>
