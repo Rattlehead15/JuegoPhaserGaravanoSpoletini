@@ -38,6 +38,7 @@
     var cursors;
     var game = new Phaser.Game(config);
     var plat;
+    var texto;
 
     function preload ()
     {
@@ -48,7 +49,13 @@
         this.load.image('bomb', 'assets/bomb.png');
         this.load.image('cielopro', 'assets/1.jpg');
         this.load.image('bicho', 'assets/bicho.png');
+        this.load.image('rayo', 'assets/kisspng-ball-lightning-sphere-sprite-5ae2b4ef13be66.8961591215248068950809.png');
         this.load.spritesheet('waluigi', 'assets/waluigi.png', { frameWidth: 38, frameHeight: 50 });
+        this.load.audio('explotar', ['assets/Fireball+3.mp3'], {instances: 1});
+        this.load.audio('angery', ['assets/ANGERY.mp3'], {instances: 1});
+        this.load.audio('oof', ['assets/roblox-death-sound_1.mp3'], {instances: 1});
+        this.load.audio('ganar', ['assets/WAA!! WALUIGI SFX.mp3'], {instances: 1});
+        this.load.audio('escupir',['assets/170161__timgormly__8-bit-laser.mp3'], {instances: 5});
     }
 
     class jefe{
@@ -60,30 +67,111 @@
             juego.physics.add.collider(this.sprite, player);
             this.sprite.setCollideWorldBounds(false);
             this.sprite.body.allowGravity=false;
-            this.TirarBola();
+            this.dispararConTiempo();
             this.muerto = false;
+            this.disparo = false;
+            this.hizoRuido = false;
         }
         
-        TirarBola(){
+        TirarBola(tipo){
             if(this.muerto)
                 return;
-            var bola = new bolaDeFuego(620, this.sprite.y - 40, this.juego, this.vida,-(450 + (3-this.vida)*150), this.player)
+            if(tipo == 4)
+                if(!this.hizoRuido){
+                    this.juego.sound.play('escupir');
+                    this.hizoRuido = true;
+                }
+            var bola = new bolaDeFuego(640, this.sprite.y - 40, this.juego, tipo,-(450 + (3-this.vida)*150), this.player)
         }
 
         morir(){
             this.vida--;
-            if(vida<=0){
+            if(this.vida<=0){
                 this.muerto = true;
                 this.sprite.destroy();
+                this.meta = this.juego.physics.add.sprite(400,300,'base');
+                this.juego.sound.play('ganar');
+                this.juego.physics.add.collider(this.player.sprite, this.meta, function(){texto.alpha = 100;}, null, this.juego);
+                this.meta.scaleX = 1;
+                this.meta.scaleY = 1;
+                this.meta.body.allowGravity = false;
+                this.meta.setImmovable(true);
+                this.meta.setTint(0x44FF44);
             }
+            this.eventoDisparo.destroy();
+            this.dispararConTiempo();
+            if(this.vida == 2){
+                this.juego.sound.play('oof');
+                this.sprite.setTint(0xff8800);
+            }
+            if(this.vida == 1){
+                this.juego.sound.play('angery');
+                this.sprite.setTint(0xff0000);
+            }
+        }
+
+        seguir(coso){
+            if(this.muerto == true)
+                return;
+
+            if(this.sprite.x < 620 || this.sprite.x > 780)
+                this.sprite.setVelocityX(0);
+
+            if(this.sprite.x > 680){
+                this.sprite.setAccelerationX(-200 + (3-this.vida) * -100);
+            }
+
+            if(this.sprite.x < 680) {
+                this.sprite.setAccelerationX(200 + (3-this.vida) * 100);
+            }
+
+            if(coso.muerto == false){
+                if(Math.abs(coso.sprite.y - this.sprite.y) > 10){
+                    this.hizoRuido = false;
+                    if(coso.sprite.y <= this.sprite.y)
+                        this.sprite.setAccelerationY(-60 - (3-this.vida) * 70);
+                    else
+                        this.sprite.setAccelerationY(60 + (3-this.vida) * 70);
+                }else{
+                    if(this.vida == 1)
+                        this.TirarBola(4);
+                }
+            }else{
+                this.sprite.setAccelerationY(0);
+                this.sprite.setVelocityY(0);
+            }
+        }
+
+        dispararConTiempo(){
+            if(this.muerto)
+                return;
+            var retraso = 2000;
+            if(this.vida == 2)
+                retraso = 1000;
+            if(this.vida == 1)
+                retraso = 500;
+            this.eventoDisparo = this.juego.time.addEvent({
+                delay: retraso,
+                repeat: 0,
+                loop: true,
+                callback: function(){this.TirarBola(this.vida);},
+                callbackScope: this
+            });
         }
     }
 
     class bolaDeFuego{
         constructor(x, y, juego, tipo, velocidad, player){
-            this.juego = juego;
             var bola;
+            if(tipo == 4){
+                bola = juego.physics.add.sprite(x, y, 'rayo')
+                bola.scaleX = 0.07;
+                bola.scaleY = 0.07;
+                bola.setTint(0x0000ff);
+                juego.physics.add.collider(bola, player.sprite, function(){ bola.destroy(); player.morir(); }, null, this);
+            }
             if(tipo == 3){
+                juego.sound.play('escupir');
                 bola = juego.physics.add.sprite(x, y, 'bomb')
                 bola.scaleX = 2;
                 bola.scaleY = 2;
@@ -91,6 +179,7 @@
                 juego.physics.add.collider(bola, player.sprite, function(){ bola.destroy(); player.morir(); }, null, this);
             }
             if(tipo == 2){
+                juego.sound.play('escupir');
                 bola = juego.physics.add.sprite(x, y, 'bomb')
                 bola.scaleX = 3;
                 bola.scaleY = 3;
@@ -98,6 +187,7 @@
                 juego.physics.add.collider(bola, player.sprite, function(){ bola.destroy(); player.morir(); }, null, this);
             }
             if(tipo == 1){
+                juego.sound.play('escupir');
                 bola = juego.physics.add.sprite(x, y, 'bomb')
                 bola.scaleX = 4;
                 bola.scaleY = 4;
@@ -105,6 +195,7 @@
                 juego.physics.add.collider(bola, player.sprite, function(){ bola.destroy(); player.morir(); }, null, this);
             }
             if(tipo == 0){
+                juego.sound.play('explotar');
                 bola = juego.physics.add.sprite(x, y, 'bomb')
                 bola.scaleX = 1;
                 bola.scaleY = 1;
@@ -117,7 +208,8 @@
     }
 
     class jugador{
-		constructor(sprite){
+		constructor(sprite, juego){
+            this.juego = juego
             this.muerto = false;
             this.corriendo = false;
             this.sprite = sprite
@@ -125,10 +217,17 @@
             this.mirandoDerecha = true;
             this.arriba = false;
             this.agachado = false;
+            this.retraso = 5000;
+            this.disparo = false;
+            this.sprite.setTint(0x8888ff);
+            this.limitarDisparos();
 		}
         morir(){
             this.muerto = true;
             this.sprite.destroy();
+            texto.alpha = 100;
+            texto.text = "PERDISTE";
+            texto.setFill('#F00');
         }
 		mover(direccion){
             if(this.muerto){
@@ -198,12 +297,35 @@
                     this.sprite.anims.play('fallL');
             }
         }
+        setEnemigo(malo){
+            this.enemigo = malo;
+        }
+        TirarBola(){
+            if(!this.disparo){
+                var bola = new bolaDeFuego(this.sprite.x + 30, this.sprite.y, this.juego, 0, 300, this.enemigo);
+                this.sprite.setTint(0xffffff);
+                this.disparo = true;
+            }
+        }
+        limitarDisparos(){
+            this.evento = this.juego.time.addEvent({
+                delay: this.retraso,
+                repeat: 0,
+                loop: true,
+                callback: function(){this.disparo = false, this.sprite.setTint(0x8888FF)},
+                callbackScope: this
+            });
+        }
 	}
 
-    class movediza{
-            
-        constructor(sprite){
-            this.sprite = sprite;
+    class movediza{    
+        constructor(juego, player){
+            this.juego = juego;
+            this.player = player;
+            this.sprite = juego.physics.add.sprite(110,500, 'base');
+            juego.physics.add.collider(this.sprite, player.sprite);
+            this.sprite.setCollideWorldBounds(true);
+            this.sprite.body.allowGravity=false;
 		}
         subir(){
             this.sprite.setVelocityY(-100);
@@ -217,32 +339,19 @@
         quietoY(){
             this.sprite.setVelocityY(0);
         }
-
-    }
-    function platformrandom()
-    {
-        P1 = new movediza(platrand);
     }
 
     function create ()
     {
-        //Aqui creamos el cielo, y le desactivamos la gravedad para que no se caiga *referencia a chicken little*
+        //Aqui creamos el cielo
         cielo = this.add.tileSprite(0, 0, 4000, 1200, 'cielopro');
-
-        platforms = this.physics.add.staticGroup();
-       
-        //platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-
-       //platforms.create(600, 400, 'ground');
-        //platforms.create(50, 250, 'ground');
-        //platforms.create(750, 220, 'ground');
-		
+		texto = this.add.text(16,16, 'GANASTE', {fontsize: '400', fill: '#0F0'});
+        texto.alpha = 0;
+        //Creamos un sprite para el Jugador, y luego creamos al jugador
         player = this.physics.add.sprite(100, 450, 'waluigi');
         player.setBounce(0.1);
         player.setCollideWorldBounds(false);
-
-
-		J1 = new jugador(player);
+		J1 = new jugador(player, this);
         
         //Animaciones del personaje principal
         this.anims.create({
@@ -251,19 +360,16 @@
             frameRate: 9,
             repeat: -1
         });
-
         this.anims.create({
             key: 'turn',
             frames: [ { key: 'waluigi', frame: 0 } ],
             frameRate: 20
         });
-
         this.anims.create({
             key: 'turnL',
             frames: [ { key: 'waluigi', frame: 42 } ],
             frameRate: 20
         });
-
         this.anims.create({
             key: 'up',
             frames: [ { key: 'waluigi', frame: 2 } ],
@@ -274,7 +380,6 @@
             frames: [ { key: 'waluigi', frame: 40 } ],
             frameRate: 20
         });
-
         this.anims.create({
             key: 'down',
             frames: [ { key: 'waluigi', frame: 1 } ],
@@ -285,76 +390,61 @@
             frames: [ { key: 'waluigi', frame: 41 } ],
             frameRate: 20
         });
-
         this.anims.create({
             key: 'right',
             frames: this.anims.generateFrameNumbers('waluigi', { start: 4, end: 9 }),
             frameRate: 9,
             repeat: -1
         });
-
         this.anims.create({
             key: 'run',
             frames: this.anims.generateFrameNumbers('waluigi', { start: 14, end: 19 }),
             frameRate: 9,
             repeat: -1
         });
-
         this.anims.create({
             key: 'runL',
             frames: this.anims.generateFrameNumbers('waluigi', { start: 34, end: 39 }),
             frameRate: 9,
             repeat: -1
         });
-
         this.anims.create({
             key: 'jump',
             frames: [ { key: 'waluigi', frame: 30 } ],
             frameRate: 20
         });
-
         this.anims.create({
             key: 'jumpL',
             frames: [ { key: 'waluigi', frame: 72 } ],
             frameRate: 20
         });
-
         this.anims.create({
             key: 'fall',
             frames: [ { key: 'waluigi', frame: 31 } ],
             frameRate: 20
         });
-
         this.anims.create({
             key: 'fallL',
             frames: [ { key: 'waluigi', frame: 71 } ],
             frameRate: 20
         });
         cursors = this.input.keyboard.createCursorKeys();
-
-        this.physics.add.collider(player, platforms);
-
-        //Aca se crea la plataforma movediza
-        plat = this.physics.add.sprite(110,500, 'base');
-        this.physics.add.collider(platforms, plat);
-        this.physics.add.collider(plat, player);
-        plat.setCollideWorldBounds(true);
-        plat.body.allowGravity=false;
         
         JEFE = new jefe(this, J1);
-
-        P1 =new movediza(plat);
+        J1.setEnemigo(JEFE);
+        P1 = new movediza(this, J1);
         
 
     }
 
     function update ()
     {
+        JEFE.seguir(J1);
         //Para hacer que el cielo avance
         cielo.tilePositionX += 1;
         //Para controlar el personaje
         if(cursors.shift.isDown)
-            J1.corriendo = true;
+            J1.TirarBola(this);
         else
             J1.corriendo = false;
         if (cursors.left.isDown)
