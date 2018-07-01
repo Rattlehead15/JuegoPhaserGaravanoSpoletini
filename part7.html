@@ -132,6 +132,8 @@
                         this.sprite.setAccelerationY(-60 - (3-this.vida) * 70);
                     else
                         this.sprite.setAccelerationY(60 + (3-this.vida) * 70);
+                    if(this.sprite.y <= 180 || this.sprite.y >= 460)
+                        this.sprite.setVelocityY(0);
                 }else{
                     if(this.vida == 1)
                         this.TirarBola(4);
