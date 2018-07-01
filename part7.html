@@ -48,11 +48,77 @@
         this.load.image('bomb', 'assets/bomb.png');
         this.load.image('cielopro', 'assets/1.jpg');
         this.load.image('bicho', 'assets/bicho.png');
-        this.load.spritesheet('123', 'assets/waluigi.png', { frameWidth: 38, frameHeight: 50 });
+        this.load.spritesheet('waluigi', 'assets/waluigi.png', { frameWidth: 38, frameHeight: 50 });
+    }
+
+    class jefe{
+        constructor(juego, player){
+            this.player = player;
+            this.juego = juego;
+            this.sprite = juego.physics.add.sprite(680, Math.floor(Math.random() * 270) + 180 , 'bicho');
+            this.vida = 3;
+            juego.physics.add.collider(this.sprite, player);
+            this.sprite.setCollideWorldBounds(false);
+            this.sprite.body.allowGravity=false;
+            this.TirarBola();
+            this.muerto = false;
+        }
+        
+        TirarBola(){
+            if(this.muerto)
+                return;
+            var bola = new bolaDeFuego(620, this.sprite.y - 40, this.juego, this.vida,-(450 + (3-this.vida)*150), this.player)
+        }
+
+        morir(){
+            this.vida--;
+            if(vida<=0){
+                this.muerto = true;
+                this.sprite.destroy();
+            }
+        }
+    }
+
+    class bolaDeFuego{
+        constructor(x, y, juego, tipo, velocidad, player){
+            this.juego = juego;
+            var bola;
+            if(tipo == 3){
+                bola = juego.physics.add.sprite(x, y, 'bomb')
+                bola.scaleX = 2;
+                bola.scaleY = 2;
+                bola.setTint(0x00ff00);
+                juego.physics.add.collider(bola, player.sprite, function(){ bola.destroy(); player.morir(); }, null, this);
+            }
+            if(tipo == 2){
+                bola = juego.physics.add.sprite(x, y, 'bomb')
+                bola.scaleX = 3;
+                bola.scaleY = 3;
+                bola.setTint(0xffff00);
+                juego.physics.add.collider(bola, player.sprite, function(){ bola.destroy(); player.morir(); }, null, this);
+            }
+            if(tipo == 1){
+                bola = juego.physics.add.sprite(x, y, 'bomb')
+                bola.scaleX = 4;
+                bola.scaleY = 4;
+                bola.setTint(0xff0000);
+                juego.physics.add.collider(bola, player.sprite, function(){ bola.destroy(); player.morir(); }, null, this);
+            }
+            if(tipo == 0){
+                bola = juego.physics.add.sprite(x, y, 'bomb')
+                bola.scaleX = 1;
+                bola.scaleY = 1;
+                bola.setTint(0xcc00ff);
+                juego.physics.add.collider(bola, player.sprite, function(){ bola.destroy(); player.morir(); }, null, this);
+            }
+            bola.body.allowGravity = false;
+            bola.setVelocityX(velocidad);
+        }
     }
 
     class jugador{
 		constructor(sprite){
+            this.muerto = false;
             this.corriendo = false;
             this.sprite = sprite
 			this.saltando = false;
@@ -60,7 +126,14 @@
             this.arriba = false;
             this.agachado = false;
 		}
+        morir(){
+            this.muerto = true;
+            this.sprite.destroy();
+        }
 		mover(direccion){
+            if(this.muerto){
+                return;
+            }
 			if(direccion == "Izquierda"){
                 this.mirandoDerecha = false;
                 if(this.corriendo){
@@ -105,10 +178,14 @@
             }
 		}
         saltar(){
+            if(this.muerto)
+                return;
             this.saltando = true;
             this.sprite.setVelocityY(-330);
         }
         caer(){
+            if(this.muerto)
+                return;
             if(this.saltando){
                 if(this.mirandoDerecha)
                     this.sprite.anims.play('jump');
@@ -125,24 +202,23 @@
 
     class movediza{
             
-            constructor(sprite){
-                this.sprite = sprite;
+        constructor(sprite){
+            this.sprite = sprite;
 		}
-        
-            subir(){
-                this.sprite.setVelocityY(-100);
-            }
-            bajar(){
-                this.sprite.setVelocityY(100);
-            }
-            quietoX(){
-                this.sprite.x=430;
-            }
-            quietoY(){
-                this.sprite.setVelocityY(0);
-            }
-
+        subir(){
+            this.sprite.setVelocityY(-100);
         }
+        bajar(){
+            this.sprite.setVelocityY(100);
+        }
+        quietoX(){
+            this.sprite.x=430;
+        }
+        quietoY(){
+            this.sprite.setVelocityY(0);
+        }
+
+    }
     function platformrandom()
     {
         P1 = new movediza(platrand);
@@ -161,96 +237,97 @@
         //platforms.create(50, 250, 'ground');
         //platforms.create(750, 220, 'ground');
 		
-        player = this.physics.add.sprite(100, 450, '123');
+        player = this.physics.add.sprite(100, 450, 'waluigi');
         player.setBounce(0.1);
         player.setCollideWorldBounds(false);
 
 
 		J1 = new jugador(player);
         
+        //Animaciones del personaje principal
         this.anims.create({
             key: 'left',
-            frames: this.anims.generateFrameNumbers('123', { start: 24, end: 29 }),
+            frames: this.anims.generateFrameNumbers('waluigi', { start: 24, end: 29 }),
             frameRate: 9,
             repeat: -1
         });
 
         this.anims.create({
             key: 'turn',
-            frames: [ { key: '123', frame: 0 } ],
+            frames: [ { key: 'waluigi', frame: 0 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'turnL',
-            frames: [ { key: '123', frame: 42 } ],
+            frames: [ { key: 'waluigi', frame: 42 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'up',
-            frames: [ { key: '123', frame: 2 } ],
+            frames: [ { key: 'waluigi', frame: 2 } ],
             frameRate: 20
         });
         this.anims.create({
             key: 'upL',
-            frames: [ { key: '123', frame: 40 } ],
+            frames: [ { key: 'waluigi', frame: 40 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'down',
-            frames: [ { key: '123', frame: 1 } ],
+            frames: [ { key: 'waluigi', frame: 1 } ],
             frameRate: 20
         });
         this.anims.create({
             key: 'downL',
-            frames: [ { key: '123', frame: 41 } ],
+            frames: [ { key: 'waluigi', frame: 41 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'right',
-            frames: this.anims.generateFrameNumbers('123', { start: 4, end: 9 }),
+            frames: this.anims.generateFrameNumbers('waluigi', { start: 4, end: 9 }),
             frameRate: 9,
             repeat: -1
         });
 
         this.anims.create({
             key: 'run',
-            frames: this.anims.generateFrameNumbers('123', { start: 14, end: 19 }),
+            frames: this.anims.generateFrameNumbers('waluigi', { start: 14, end: 19 }),
             frameRate: 9,
             repeat: -1
         });
 
         this.anims.create({
             key: 'runL',
-            frames: this.anims.generateFrameNumbers('123', { start: 34, end: 39 }),
+            frames: this.anims.generateFrameNumbers('waluigi', { start: 34, end: 39 }),
             frameRate: 9,
             repeat: -1
         });
 
         this.anims.create({
             key: 'jump',
-            frames: [ { key: '123', frame: 30 } ],
+            frames: [ { key: 'waluigi', frame: 30 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'jumpL',
-            frames: [ { key: '123', frame: 72 } ],
+            frames: [ { key: 'waluigi', frame: 72 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'fall',
-            frames: [ { key: '123', frame: 31 } ],
+            frames: [ { key: 'waluigi', frame: 31 } ],
             frameRate: 20
         });
 
         this.anims.create({
             key: 'fallL',
-            frames: [ { key: '123', frame: 71 } ],
+            frames: [ { key: 'waluigi', frame: 71 } ],
             frameRate: 20
         });
         cursors = this.input.keyboard.createCursorKeys();
@@ -264,13 +341,7 @@
         plat.setCollideWorldBounds(true);
         plat.body.allowGravity=false;
         
-        //Aca crearemos las plataformas que apareceran aleatoriamente
-        platrand = this.physics.add.sprite(400 ,(Math.floor((Math.random() * 500) + 1)),'bicho');
-        this.physics.add.collider(platrand, player);
-        platrand.setCollideWorldBounds(false);
-        platrand.body.allowGravity=false;
-
-
+        JEFE = new jefe(this, J1);
 
         P1 =new movediza(plat);
         
@@ -307,33 +378,38 @@
             J1.mover("No");
         }
 
-        if (player.body.touching.down)
-        {
-            J1.saltando=false;
-            if(cursors.up.isDown)
-                J1.mover("Arriba");
-            if(cursors.down.isDown)
-                J1.mover("Abajo");
-            if(!cursors.up.isDown && !cursors.down.isDown){
-                J1.arriba = false;
-                J1.abajo = false;
+        //Por como funciona phaser, debemos checkear que el jugador siga existiendo antes de checkear si está tocando el piso para prevenir un crash
+        if(!J1.muerto){
+            if (player.body.touching.down)
+            {
+                J1.saltando=false;
+                if(cursors.up.isDown)
+                    J1.mover("Arriba");
+                if(cursors.down.isDown)
+                    J1.mover("Abajo");
+                if(!cursors.up.isDown && !cursors.down.isDown){
+                    J1.arriba = false;
+                    J1.abajo = false;
+                }
+                if(cursors.space.isDown)
+                    J1.saltar();
             }
-            if(cursors.space.isDown)
-                J1.saltar();
-        }
-        if (!player.body.touching.down){
-            J1.caer();
-        }
-        
-        //Para controlar las plataformas:
-        if (cursors.up.isDown){
-            P1.subir();
-        }
-        else{
+            if (!player.body.touching.down){
+                J1.caer();
+            }
+            
+            //Para controlar las plataformas:
+            if (cursors.up.isDown){
+                P1.subir();
+            }
+            else{
+                P1.quietoY();
+            }
+            if(cursors.down.isDown){
+                P1.bajar();
+            }
+        }else{
             P1.quietoY();
-        }
-        if(cursors.down.isDown){
-            P1.bajar();
         }
       //  P1.quietoX();
     }
