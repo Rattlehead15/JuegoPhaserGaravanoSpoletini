@@ -39,7 +39,7 @@
     var game = new Phaser.Game(config);
     var plat;
     var texto;
-
+    var botonDisparo;
     function preload ()
     {
         this.load.image('sky', 'assets/sky.png');
@@ -345,6 +345,7 @@
 
     function create ()
     {
+        botonDisparo = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         //Aqui creamos el cielo
         cielo = this.add.tileSprite(0, 0, 4000, 1200, 'cielopro');
 		texto = this.add.text(16,16, 'GANASTE', {fontsize: '400', fill: '#0F0'});
@@ -445,8 +446,11 @@
         //Para hacer que el cielo avance
         cielo.tilePositionX += 1;
         //Para controlar el personaje
+        if(botonDisparo.isDown){
+            J1.TirarBola();
+        }
         if(cursors.shift.isDown)
-            J1.TirarBola(this);
+            J1.corriendo = true;
         else
             J1.corriendo = false;
         if (cursors.left.isDown)
